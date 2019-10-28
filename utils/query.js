@@ -5,6 +5,7 @@ const Types = {
     literal: 1,
     integer: 2,
     punctuator: 3,
+    regex: 4,
 };
 
 const Keywords = [
@@ -17,6 +18,8 @@ const Keywords = [
     "state",    // 6
     "tier",     // 7
     "query",    // 8 not in use
+    "reforege", // 9
+    "potato",   // 10
 ];
 
 const Punctuators = [
@@ -27,11 +30,12 @@ const Punctuators = [
 
 module.exports = Query = class Query {
     static tokenize (query) {
+        const regex = `(\\/(?<regex>([^\\\\/]|\\\\/)*)\\/(?<flag>[a-z]*))`;
         const keyword = `((?<keyword>${Keywords.join("|")})(?=:))`;
         const punctuator = `(?<punctuator>${Punctuators.join("|")})`;
         const integer = `(?<integer>[0-9]+)`;
         const literal = `("(?<literal_val1>([^\\\\"]|\\\\.)*)"|(?<literal_val2>[^ :]+))`;
-        const regexp = new RegExp(`${keyword}|${punctuator}|${integer}|${literal}`, "g");
+        const regexp = new RegExp(`${regex}|${keyword}|${punctuator}|${integer}|${literal}`, "g");
         let result = null;
         let response = [];
         while (result = regexp.exec(query)) {
@@ -58,6 +62,12 @@ module.exports = Query = class Query {
                 response.push({
                     type: Types.punctuator,
                     value: groups.punctuator,
+                });
+            }
+            if (groups.regex) {
+                response.push({
+                    type: Types.regex,
+                    value: new RegExp(groups.regex, groups.flag),
                 });
             }
         }
@@ -120,6 +130,18 @@ module.exports = Query = class Query {
                 if (token.value === Keywords[8]) { // query
                     // not in use
                 }
+                if (token.value === Keywords[9]) { // reforge
+                    response.push({
+                        type: Keywords[9],
+                        value: tokens[i += 2].value,
+                    });
+                }
+                if (token.value === Keywords[10]) { // potato
+                    response.push({
+                        type: Keywords[10],
+                        value: tokens[i += 2].value,
+                    });
+                }
             }
         }
         return response;
@@ -148,6 +170,7 @@ module.exports = Query = class Query {
             }
         });
         let sql = `select *, count(bids.uuid) as bid, end - strftime('%s', datetime()) * 1000 as time, max(highest_bid_amount, starting_bid) as price from auctions left outer join bids on auctions.uuid = bids.uuid ${where.length ? "where" : ""} ${where.join(" and ")} group by bids.uuid ${order} ${limit}`;
-        return sql;
+        console.log(ast, sql)
+        return [sql, ast.filter(part => part.type === Keywords[9] || part.type === Keywords[10])];
     }
 };

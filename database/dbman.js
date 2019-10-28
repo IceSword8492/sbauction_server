@@ -39,7 +39,16 @@ module.exports = {
             await this._stmt.run(data.uuid, data.auctioneer, data.profile_id, data.start, data.end, data.item_name, data.item_lore, data.extra, data.category, data.tier, data.starting_bid, data.item_bytes, data.claimed, data.highest_bid_amount).catch(e => console.error("[AuctionsManager.create_stmt] ", e));
         }
         static async search (query = []) {
-            let result = await this.db.all(await Query.compile(query));
+            let [sql, ast] = await Query.compile(query);
+            let result = await this.db.all(sql);
+            ast.forEach(part => {
+                if (part.type === "reforge") {
+                    result = result.filter(auction => part.value.exec(auction.item_name));
+                }
+                if (part.type === "porato") {
+                    result = result.filter(auction => part.value.exec(auction.item_lore));
+                }
+            });
             return result;
         }
     },
