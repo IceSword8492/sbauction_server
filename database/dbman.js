@@ -11,10 +11,10 @@ module.exports = {
     AuctionsManager: class extends DBMan {
         static async init () {
             await super.init();
-            await this.db.run("create table if not exists auctions (uuid text unique, auctioneer text, profile_id text, start integer, end integer, item_name text, item_lore text, extra text, category text, tier text, starting_bid integer, item_bytes text, claimed boolean, highest_bid_amount integer)").catch(console.error);
+            await this.db.run("create table if not exists auctions (uuid text unique, auctioneer text, profile_id text, start integer, end integer, item_name text, item_lore text, extra text, category text, tier text, starting_bid integer, item_bytes text, claimed boolean, highest_bid_amount integer)").catch(e => console.error("[BidsManager.init] ", e));
         }
         static async create (data = {}) {
-            await this.db.run(`insert or replace into auctions values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, data.uuid, data.auctioneer, data.profile_id, data.start, data.end, data.item_name, data.item_lore, data.extra, data.category, data.tier, data.starting_bid, data.item_bytes, data.claimed, data.highest_bid_amount).catch(console.error);
+            await this.db.run(`insert or replace into auctions values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, data.uuid, data.auctioneer, data.profile_id, data.start, data.end, data.item_name, data.item_lore, data.extra, data.category, data.tier, data.starting_bid, data.item_bytes, data.claimed, data.highest_bid_amount).catch(e => console.error("[AuctionsManager.create] ", e));
         }
     },
     ClaimedBiddersManager: class extends DBMan {
@@ -29,10 +29,10 @@ module.exports = {
     BidsManager: class extends DBMan {
         static async init () {
             await super.init();
-            await this.db.run("create table if not exists bids (uuid text, auction_id text, bidder text, profile_id text, amount integer, timestamp integer, unique(uuid, timestamp))").catch(console.error);
+            await this.db.run("create table if not exists bids (uuid text, auction_id text, bidder text, profile_id text, amount integer, timestamp integer, unique(uuid, timestamp))").catch(e => console.error("[BidsManager.init] ", e));
         }
         static async create (data = {}) {
-            await this.db.run(`insert or replace into bids (?, ?, ?, ?, ?, ?)`, data.auction, data.auction_id, data.bidder, data.profile_id, data.amount, data.timestamp);
+            await this.db.run(`insert or replace into bids (?, ?, ?, ?, ?, ?)`, data.auction, data.auction_id, data.bidder, data.profile_id, data.amount, data.timestamp).catch(e => console.error("[BidsManager.create] ", e));
         }
     },
     UsersManager: class extends DBMan {
