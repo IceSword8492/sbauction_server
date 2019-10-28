@@ -18,13 +18,18 @@ Object.values(dbman).forEach(man => {
 setTimeout(async function () {
     console.log("updating");
     let auctions = JSON.parse(await rp.get(`https://api.hypixel.net/skyblock/auctions?key=${process.env.API_KEY}`).catch(console.error));
-    console.log("loaded page 0")
+    
     let totalPages = auctions.totalPages || 1;
     if (lastUpdated === (auctions.lastUpdated || 0)) {
         return;
     }
     lastUpdated = auctions.lastUpdated || 0;
     auctions = auctions.auctions;
+
+    console.log(`totalPages:\t${totalPages}`);
+    console.log(`lastUpdated:\t${lastUpdated}`);
+
+    console.log("loaded page 0");
     for (let page = 1; ; page++) {
         let a = JSON.parse(await rp.get(`https://api.hypixel.net/skyblock/auctions?key=${process.env.API_KEY}&page=${page}`).catch(console.error));
         if (!a.success) {
