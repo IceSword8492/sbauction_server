@@ -17,7 +17,7 @@ Object.values(dbman).forEach(man => {
 
 setTimeout(async function () {
     console.log("updating");
-    let auctions = JSON.parse(await rp.get(`https://api.hypixel.net/skyblock/auctions?key=${process.env.API_KEY}`));
+    let auctions = JSON.parse(await rp.get(`https://api.hypixel.net/skyblock/auctions?key=${process.env.API_KEY}`).catch(console.error));
     let totalPages = auctions.totalPages || 1;
     if (lastUpdated === (auctions.lastUpdated || 0)) {
         return;
@@ -25,7 +25,7 @@ setTimeout(async function () {
     lastUpdated = auctions.lastUpdated || 0;
     auctions = auctions.auctions;
     for (let page = 1; ; page++) {
-        let a = JSON.parse(await rp.get(`https://api.hypixel.net/skyblock/auctions?key=${process.env.API_KEY}&page=${page}`));
+        let a = JSON.parse(await rp.get(`https://api.hypixel.net/skyblock/auctions?key=${process.env.API_KEY}&page=${page}`).catch(console.error));
         if (!a.success) {
             break;
         }
