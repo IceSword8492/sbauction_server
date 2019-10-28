@@ -11,10 +11,6 @@ let lastUpdated = 0;
 
 client.use("/api/v1", require("./api/v1/router"));
 
-Object.values(dbman).forEach(man => {
-    man.init();
-});
-
 async function update () {
     console.log("updating");
     let auctions = JSON.parse(await rp.get(`https://api.hypixel.net/skyblock/auctions?key=${process.env.API_KEY}`).catch(console.error));
@@ -58,8 +54,13 @@ async function update () {
     console.log("done");
 }
 
-update();
+(async function () {
+    for (let man of Object.values(dbman)) {
+        await man.init();
+    }
+    await update();
+})();
 
 setInterval(async function () {
-    update();
+    await update();
 }, 120000); // every 2mins

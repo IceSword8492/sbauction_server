@@ -18,7 +18,7 @@ const Keywords = [
     "state",    // 6
     "tier",     // 7
     "query",    // 8 not in use
-    "reforege", // 9
+    "reforge", // 9
     "potato",   // 10
 ];
 
@@ -30,11 +30,11 @@ const Punctuators = [
 
 module.exports = Query = class Query {
     static tokenize (query) {
-        const regex = `(\\/(?<regex>([^\\\\/]|\\\\/)*)\\/(?<flag>[a-z]*))`;
+        const regex = `(\\/(?<regex>([^\\/]|\\\\/)*)\\/(?<flag>[a-z]*))`;
         const keyword = `((?<keyword>${Keywords.join("|")})(?=:))`;
         const punctuator = `(?<punctuator>${Punctuators.join("|")})`;
         const integer = `(?<integer>[0-9]+)`;
-        const literal = `("(?<literal_val1>([^\\\\"]|\\\\.)*)"|(?<literal_val2>[^ :]+))`;
+        const literal = `("(?<literal_val1>([^\\"]|\\\\.)*)"|(?<literal_val2>[^ :]+))`;
         const regexp = new RegExp(`${regex}|${keyword}|${punctuator}|${integer}|${literal}`, "g");
         let result = null;
         let response = [];
@@ -67,10 +67,11 @@ module.exports = Query = class Query {
             if (groups.regex) {
                 response.push({
                     type: Types.regex,
-                    value: new RegExp(groups.regex, groups.flag),
+                    value: groups.regex,
                 });
             }
         }
+        console.log(response)
         return response;
     }
     static async parse (query) {
@@ -133,13 +134,13 @@ module.exports = Query = class Query {
                 if (token.value === Keywords[9]) { // reforge
                     response.push({
                         type: Keywords[9],
-                        value: tokens[i += 2].value,
+                        value: "(" + tokens[i += 2].value.split(",").map(p => `item_name glob '${p}'`).join(" or ") + ")",
                     });
                 }
                 if (token.value === Keywords[10]) { // potato
                     response.push({
                         type: Keywords[10],
-                        value: tokens[i += 2].value,
+                        value: "(" + tokens[i += 2].value.split(",").map(p => `item_lore like '%${p}%'`).join(" or ") + ")",
                     });
                 }
             }
@@ -159,6 +160,8 @@ module.exports = Query = class Query {
             case Keywords[4]:
             case Keywords[6]:
             case Keywords[7]:
+            case Keywords[9]:
+            case Keywords[10]:
                 where.push(part.value);
                 break;
             case Keywords[2]:
@@ -171,6 +174,6 @@ module.exports = Query = class Query {
         });
         let sql = `select *, count(bids.uuid) as bid, end - strftime('%s', datetime()) * 1000 as time, max(highest_bid_amount, starting_bid) as price from auctions left outer join bids on auctions.uuid = bids.uuid ${where.length ? "where" : ""} ${where.join(" and ")} group by bids.uuid ${order} ${limit}`;
         console.log(ast, sql)
-        return [sql, ast.filter(part => part.type === Keywords[9] || part.type === Keywords[10])];
+        return sql;
     }
 };
