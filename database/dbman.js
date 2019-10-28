@@ -4,6 +4,20 @@ class DBMan {
     static async init () {
         console.log(`${this.name} initializing`);
         this.db = await sqlite.open("./database/main.db").catch(console.error);
+        this._stmt = null;
+    }
+    static async begin () {
+        await this.db.exec("begin transaction");
+    }
+    static async commit () {
+        await this.db.exec("commit");
+    }
+    static async prepare (statement) {
+        this._stmt = await this.db.prepare(statement);
+    }
+    static async finalize () {
+        await this._stmt.finalize();
+        this._stmt = null;
     }
 }
 
@@ -16,14 +30,28 @@ module.exports = {
         static async create (data = {}) {
             await this.db.run(`insert or replace into auctions values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, data.uuid, data.auctioneer, data.profile_id, data.start, data.end, data.item_name, data.item_lore, data.extra, data.category, data.tier, data.starting_bid, data.item_bytes, data.claimed, data.highest_bid_amount).catch(e => console.error("[AuctionsManager.create] ", e));
         }
+        static async prepare_create () {
+            await this.prepare(`insert or replace into auctions values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+        }
+        static async create_stmt (data = {}) {
+            if (this._stmt === null) throw new Error("[AuctionManager.create_stmt] statement empty");
+            await this._stmt.run(data.uuid, data.auctioneer, data.profile_id, data.start, data.end, data.item_name, data.item_lore, data.extra, data.category, data.tier, data.starting_bid, data.item_bytes, data.claimed, data.highest_bid_amount).catch(e => console.error("[AuctionsManager.create_stmt] ", e));
+        }
     },
-    ClaimedBiddersManager: class extends DBMan {
+    ClaimedBiddersManager: class extends DBMan { // not in use
         static async init () {
             await super.init();
             await this.db.run("create table if not exists claimed_bidders (uuid text, claimed_bidder text, unique(uuid, claimed_bidder))").catch(console.error);
         }
-        static async create (data = {}) { // not in use
-            await this.db.run(`insert or replace into claimed_bidders (?, ?)`, data.uuid, data.claimed_bidder);
+        static async create (data = {}) {
+            await this.db.run(`insert or replace into claimed_bidders values (?, ?)`, data.uuid, data.claimed_bidder);
+        }
+        static async prepare_create () {
+            await this.prepare(`insert or replace into claimed_bidders values (?, ?)`);
+        }
+        static async create_stmt (data = {}) {
+            if (this._stmt === null) throw new Error("[ClaimedBidderManager.create_stmt] statement empty");
+            await this._stmt.run(data.uuid, data.claimed_bidder).catch(e => console.error("[ClaimedBiddersManager.create_stmt] ", e));
         }
     },
     BidsManager: class extends DBMan {
@@ -32,7 +60,14 @@ module.exports = {
             await this.db.run("create table if not exists bids (uuid text, auction_id text, bidder text, profile_id text, amount integer, timestamp integer, unique(uuid, timestamp))").catch(e => console.error("[BidsManager.init] ", e));
         }
         static async create (data = {}) {
-            await this.db.run(`insert or replace into bids (?, ?, ?, ?, ?, ?)`, data.auction, data.auction_id, data.bidder, data.profile_id, data.amount, data.timestamp).catch(e => console.error("[BidsManager.create] ", e));
+            await this.db.run(`insert or replace into bids values (?, ?, ?, ?, ?, ?)`, data.auction_id, data.auction_id, data.bidder, data.profile_id, data.amount, data.timestamp).catch(e => console.error("[BidsManager.create] ", e));
+        }
+        static async prepare_create () {
+            await this.prepare(`insert or replace into bids values (?, ?, ?, ?, ?, ?)`);
+        }
+        static async create_stmt (data = {}) {
+            if (this._stmt === null) throw new Error("[BidsManager.create_stmt] statement empty");
+            await this._stmt.run(data.auction_id, data.auction_id, data.bidder, data.profile_id, data.amount, data.timestamp).catch(e => console.error("[BidsManager.create_stmt] ", e));
         }
     },
     UsersManager: class extends DBMan {

@@ -27,7 +27,7 @@ async function update () {
     auctions = auctions.auctions;
 
     console.log(`totalPages:\t${totalPages}`);
-    console.log(`lastUpdated:\t${lastUpdated}`);
+    console.log(`lastUpdated:\t${new Date(lastUpdated)} (Timestamp: ${lastUpdated})`);
 
     console.log("loaded page 0");
     for (let page = 1; ; page++) {
@@ -39,10 +39,23 @@ async function update () {
         auctions = [...auctions, ...(a.auctions)];
     }
     console.log("start writing");
-    auctions.forEach(async auction => {
-        await dbman.AuctionsManager.create(auction);
-        auction.bids.forEach(async bid => await dbman.BidsManager.create(bid));
-    });
+    await dbman.AuctionsManager.begin();
+    await dbman.AuctionsManager.prepare_create();
+    for (let auction of auctions) {
+        await dbman.AuctionsManager.create_stmt(auction);
+    }
+    await dbman.AuctionsManager.finalize();
+    await dbman.AuctionsManager.commit();
+    await dbman.BidsManager.begin();
+    await dbman.BidsManager.prepare_create();
+    for (let auction of auctions) {
+        for (let bid of auction.bids) {
+            await dbman.BidsManager.create_stmt(bid);
+        }
+    }
+    await dbman.BidsManager.finalize();
+    await dbman.BidsManager.commit();
+    console.log("done");
 }
 
 update();
