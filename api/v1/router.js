@@ -76,7 +76,7 @@ router.get("/search", async (req, res) => {
     let page = req.query.page || 0;
     let query = req.query.query;
     if (!query || query.length === 0) {
-        query = "sort:price.desc";
+        query = "sort:price.desc state:open";
     }
     let result = await dbman.AuctionsManager.search(query);
     res.status(200).send(result);
