@@ -15,7 +15,7 @@ Object.values(dbman).forEach(man => {
     man.init();
 });
 
-function update () {
+async function update () {
     console.log("updating");
     let auctions = JSON.parse(await rp.get(`https://api.hypixel.net/skyblock/auctions?key=${process.env.API_KEY}`).catch(console.error));
     
