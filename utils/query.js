@@ -178,7 +178,7 @@ module.exports = Query = class Query {
         let sql;
         switch (mode) {
         case 1:
-            sql = `select count(distinct auctions.uuid) as count, count(bids.uuid) as bid, end - strftime('%s', datetime()) * 1000 as time, max(highest_bid_amount, starting_bid) as price from auctions left outer join bids on auctions.uuid = bids.uuid ${where.length ? "where" : ""} ${where.join(" and ")} group by bids.uuid ${order}`;
+            sql = `select count(distinct auctions.uuid) as count, count(bids.uuid) as bid, end - strftime('%s', datetime()) * 1000 as time, max(highest_bid_amount, starting_bid) as price from auctions left outer join bids on auctions.uuid = bids.uuid ${where.length ? "where" : ""} ${where.join(" and ")} ${order}`;
             console.log(sql);
             break;
         case 0:
