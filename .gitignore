@@ -1,0 +1,8 @@
+# node.js
+node_modules
+
+# 環境変数
+.env
+
+# データベース
+database/main.db*
