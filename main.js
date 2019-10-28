@@ -39,5 +39,4 @@ setTimeout(async function () {
             console.log(auction.claimed_bidders);
         }
     });
-    console.log("done");
 }, 1);
