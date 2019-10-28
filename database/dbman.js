@@ -1,4 +1,5 @@
 const sqlite = require("sqlite-async");
+const Query = require("../utils/query");
 
 class DBMan {
     static async init () {
@@ -36,6 +37,10 @@ module.exports = {
         static async create_stmt (data = {}) {
             if (this._stmt === null) throw new Error("[AuctionManager.create_stmt] statement empty");
             await this._stmt.run(data.uuid, data.auctioneer, data.profile_id, data.start, data.end, data.item_name, data.item_lore, data.extra, data.category, data.tier, data.starting_bid, data.item_bytes, data.claimed, data.highest_bid_amount).catch(e => console.error("[AuctionsManager.create_stmt] ", e));
+        }
+        static async search (query = []) {
+            let result = await this.db.all(await Query.compile(query));
+            return result;
         }
     },
     ClaimedBiddersManager: class extends DBMan { // not in use
