@@ -71,7 +71,6 @@ module.exports = Query = class Query {
                 });
             }
         }
-        console.log(response)
         return response;
     }
     static async parse (query) {
@@ -173,7 +172,7 @@ module.exports = Query = class Query {
             }
         });
         let sql = `select *, count(bids.uuid) as bid, end - strftime('%s', datetime()) * 1000 as time, max(highest_bid_amount, starting_bid) as price from auctions left outer join bids on auctions.uuid = bids.uuid ${where.length ? "where" : ""} ${where.join(" and ")} group by bids.uuid ${order} ${limit}`;
-        console.log(ast, sql)
+        console.log(sql);
         return sql;
     }
 };
