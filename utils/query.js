@@ -146,7 +146,7 @@ module.exports = Query = class Query {
         }
         return response;
     }
-    static async compile (query) {
+    static async compile (query, mode = 0) {
         let ast = await this.parse(query);
         let where = [];
         let order = "order by time asc";
@@ -171,7 +171,16 @@ module.exports = Query = class Query {
                 break;
             }
         });
-        let sql = `select *, count(bids.uuid) as bid, end - strftime('%s', datetime()) * 1000 as time, max(highest_bid_amount, starting_bid) as price from auctions left outer join bids on auctions.uuid = bids.uuid ${where.length ? "where" : ""} ${where.join(" and ")} group by bids.uuid ${order} ${limit}`;
+        let sql;
+        switch (mode) {
+        case 1:
+            sql = `select count(*) as count from auctions left outer join bids on auctions.uuid = bids.uuid ${where.length ? "where" : ""} ${where.join(" and ")} group by bids.uuid`;
+            break;
+        case 0:
+        default:
+            sql = `select *, count(bids.uuid) as bid, end - strftime('%s', datetime()) * 1000 as time, max(highest_bid_amount, starting_bid) as price from auctions left outer join bids on auctions.uuid = bids.uuid ${where.length ? "where" : ""} ${where.join(" and ")} group by bids.uuid ${order} ${limit}`;
+            break;
+        }
         return sql;
     }
 };

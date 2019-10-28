@@ -81,3 +81,12 @@ router.get("/search", async (req, res) => {
     let result = await dbman.AuctionsManager.search(query);
     res.status(200).send(result);
 });
+
+router.get("/search/total", async (req, res) => {
+    let query = req.query.query;
+    if (!query || query.length === 0) {
+        query = "sort:price.desc state:open";
+    }
+    let result = await dbman.AuctionsManager.search_total_count(query);
+    res.status(200).send({totalPages: Math.ceil(result.count / 48), totalRecords: result.count});
+});

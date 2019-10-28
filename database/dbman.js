@@ -38,8 +38,12 @@ module.exports = {
             if (this._stmt === null) throw new Error("[AuctionManager.create_stmt] statement empty");
             await this._stmt.run(data.uuid, data.auctioneer, data.profile_id, data.start, data.end, data.item_name, data.item_lore, data.extra, data.category, data.tier, data.starting_bid, data.item_bytes, data.claimed, data.highest_bid_amount).catch(e => console.error("[AuctionsManager.create_stmt] ", e));
         }
-        static async search (query = []) {
-            let result = await this.db.all(await Query.compile(query));
+        static async search (query = "") {
+            let result = await this.db.all(await Query.compile(query, 0));
+            return result;
+        }
+        static async search_total_count (query = "") {
+            let result = await this.db.get(await Query.compile(query, 1));
             return result;
         }
     },
