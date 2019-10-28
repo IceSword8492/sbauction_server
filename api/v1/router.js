@@ -48,6 +48,28 @@ router.get("/deploy", async (req, res) => {
     });
 });
 
+router.post("/deploy", async (req, res) => {
+    console.log("deploying");
+    let child_git = child_process.execFile("git", ["pull", "origin", "master"], (err, stdout, stderr) => {
+        if (err) {
+            console.error(err);
+            res.send("failed");
+            return;
+        }
+        console.log(stdout || stderr);
+        let child_refresh = child_process.execFile("refresh", [], (err, stdout, stderr) => {
+            if (err) {
+                console.error(err);
+                res.send("failed");
+                return;
+            }
+            console.log(stdout || stderr);
+            console.log("done");
+            res.send("done");
+        });
+    });
+});
+
 router.get("/search", async (req, res) => {
     let page = req.query.page || 0;
     let query = req.query.query;
