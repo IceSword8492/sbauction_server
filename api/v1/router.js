@@ -73,12 +73,12 @@ router.post("/deploy", async (req, res) => {
 });
 
 router.get("/search", async (req, res) => {
-    let page = req.query.page || 0;
+    let page = parseInt(req.query.page || 0);
     let query = req.query.query;
     if (!query || query.length === 0) {
         query = "sort:price.desc state:open";
     }
-    let result = await dbman.AuctionsManager.search(query);
+    let result = await dbman.AuctionsManager.search(query, page);
     res.status(200).send(result);
 });
 

@@ -146,11 +146,15 @@ module.exports = Query = class Query {
         }
         return response;
     }
-    static async compile (query, mode = 0) {
+    static async compile (query, page = 0, mode = 0) {
         let ast = await this.parse(query);
         let where = [];
         let order = "order by time asc";
         let limit = "limit 48";
+        ast.unshift({
+            type: Keywords[2],
+            value: `limit 48 offset ${page * 48}`,
+        });
         ast.forEach(part => {
             switch (part.type) {
             case Keywords[0]:
