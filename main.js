@@ -15,7 +15,7 @@ Object.values(dbman).forEach(man => {
     man.init();
 });
 
-setInterval(async function () {
+function update () {
     console.log("updating");
     let auctions = JSON.parse(await rp.get(`https://api.hypixel.net/skyblock/auctions?key=${process.env.API_KEY}`).catch(console.error));
     
@@ -43,4 +43,10 @@ setInterval(async function () {
         await dbman.AuctionsManager.create(auction);
         auction.bids.forEach(async bid => await dbman.BidsManager.create(bid));
     });
+}
+
+update();
+
+setInterval(async function () {
+    update();
 }, 120000); // every 2mins
