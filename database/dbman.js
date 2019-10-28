@@ -39,11 +39,11 @@ module.exports = {
             await this._stmt.run(data.uuid, data.auctioneer, data.profile_id, data.start, data.end, data.item_name, data.item_lore, data.extra, data.category, data.tier, data.starting_bid, data.item_bytes, data.claimed, data.highest_bid_amount).catch(e => console.error("[AuctionsManager.create_stmt] ", e));
         }
         static async search (query = "", page = 0) {
-            let result = await this.db.all(await Query.compile(query, page, 0));
+            let result = await this.db.all(await Query.compile(query, page, 0)).catch(e => console.error("[AuctionsManager.search] ", e));
             return result;
         }
         static async search_total_count (query = "", page = 0) {
-            let result = await this.db.get(await Query.compile(query, page, 1));
+            let result = await this.db.get(await Query.compile(query, page, 1)).catch(e => console.error("[AuctionsManager.search_total_count] ", e));
             return result;
         }
     },
