@@ -43,4 +43,4 @@ setInterval(async function () {
         await dbman.AuctionsManager.create(auction);
         auction.bids.forEach(async bid => await dbman.BidsManager.create(bid));
     });
-}, 1200000); // every 2mins
+}, 120000); // every 2mins
