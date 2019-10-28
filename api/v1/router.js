@@ -27,6 +27,7 @@ router.get("/auctions/:page", async (req, res) => {
 });
 
 router.get("/deploy", async (req, res) => {
+    console.log("deploying");
     let child_git = child_process.execFile("git", ["pull", "origin", "master"], (err, stdout, stderr) => {
         if (err) {
             console.error(err);
