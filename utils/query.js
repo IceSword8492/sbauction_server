@@ -5,7 +5,7 @@ const Types = {
     literal: 1,
     integer: 2,
     punctuator: 3,
-    regex: 4,
+    // regex: 4,
 };
 
 const Keywords = [
@@ -30,12 +30,12 @@ const Punctuators = [
 
 module.exports = Query = class Query {
     static tokenize (query) {
-        const regex = `(\\/(?<regex>([^\\/]|\\\\/)*)\\/(?<flag>[a-z]*))`;
+        // const regex = `(\\/(?<regex>([^\\/]|\\\\/)*)\\/(?<flag>[a-z]*))`;
         const keyword = `((?<keyword>${Keywords.join("|")})(?=:))`;
         const punctuator = `(?<punctuator>${Punctuators.join("|")})`;
         const integer = `(?<integer>[0-9]+)`;
         const literal = `("(?<literal_val1>([^\\"]|\\\\.)*)"|(?<literal_val2>[^ :]+))`;
-        const regexp = new RegExp(`${regex}|${keyword}|${punctuator}|${integer}|${literal}`, "g");
+        const regexp = new RegExp(`${keyword}|${punctuator}|${integer}|${literal}`, "g");
         let result = null;
         let response = [];
         while (result = regexp.exec(query)) {
@@ -64,12 +64,12 @@ module.exports = Query = class Query {
                     value: groups.punctuator,
                 });
             }
-            if (groups.regex) {
-                response.push({
-                    type: Types.regex,
-                    value: groups.regex,
-                });
-            }
+            // if (groups.regex) {
+            //     response.push({
+            //         type: Types.regex,
+            //         value: groups.regex,
+            //     });
+            // }
         }
         return response;
     }
@@ -133,7 +133,7 @@ module.exports = Query = class Query {
                 if (token.value === Keywords[9]) { // reforge
                     response.push({
                         type: Keywords[9],
-                        value: "(" + tokens[i += 2].value.split(",").map(p => `item_name glob '${p}'`).join(" or ") + ")",
+                        value: "(" + tokens[i += 2].value.split(",").map(p => `item_name glob '${p} [^D][^r][^a][^g][^o][^n]*' or item_name glob 'Very ${p}*'`).join(" or ") + ")",
                     });
                 }
                 if (token.value === Keywords[10]) { // potato
