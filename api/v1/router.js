@@ -87,3 +87,7 @@ router.get("/search/total", async (req, res) => {
     let result = await dbman.AuctionsManager.search_total_count(query);
     res.status(200).send({totalPages: Math.ceil(result.count / 48), totalRecords: result.count});
 });
+
+router.get("/auction/:uuid", async (req, res) => {
+    res.status(200).send(await dbman.AuctionsManager.auction_by_uuid(req.params.uuid));
+});

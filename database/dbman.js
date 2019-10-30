@@ -46,6 +46,11 @@ module.exports = {
             let result = await this.db.get(await Query.compile(query, page, 1)).catch(e => console.error("[AuctionsManager.search_total_count] ", e));
             return result;
         }
+        static async auction_by_uuid (uuid) {
+            let result = await this.db.get(`select *, count(bids.uuid) as bid, end - strftime('%s', datetime()) * 1000 as time, max(highest_bid_amount, starting_bid) as price from auctions left outer join bids on auctions.uuid = bids.uuid where auctions.uuid = ? group by bids.uuid`, uuid).catch(console.error);
+            result.uuid = uuid;
+            return result;
+        }
     },
     ClaimedBiddersManager: class extends DBMan { // not in use
         static async init () {
