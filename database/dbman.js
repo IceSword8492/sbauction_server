@@ -4,7 +4,7 @@ const Query = require("../utils/query");
 class DBMan {
     static async init () {
         console.log(`${this.name} initializing`);
-        this.db = await sqlite.open("./database/main.db").catch(console.error);
+        this.db = await sqlite.open(__dirname + "/main.db").catch(console.error);
         this._stmt = null;
     }
     static async begin () {
