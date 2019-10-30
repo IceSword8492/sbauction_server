@@ -3,7 +3,7 @@ const client = express();
 const rp = require("request-promise");
 const dbman = require("./database/dbman");
 
-require("dotenv").config();
+require("dotenv").config({path: __dirname + "/.env"});
 
 const listener = client.listen(parseInt(process.env.PORT) || 8080, () => console.log(`listening on port ${listener.address().port}`));
 
