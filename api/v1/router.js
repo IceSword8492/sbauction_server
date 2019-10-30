@@ -33,19 +33,17 @@ router.get("/deploy", async (req, res) => {
     let child_git = child_process.execFile("git", ["pull", "origin", "master"], (err, stdout, stderr) => {
         if (err) {
             console.error(err);
-            res.send("failed");
+            res.send("failed (git)");
             return;
         }
         console.log(stdout || stderr);
         let child_refresh = child_process.execFile("refresh", [], (err, stdout, stderr) => {
             if (err) {
                 console.error(err);
-                res.send("failed");
-                return;
             }
             console.log(stdout || stderr);
             console.log("done");
-            res.send("done");
+            res.send("done" + (err ? " with 1 warning" : ""));
         });
     });
 });
