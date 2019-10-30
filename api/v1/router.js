@@ -42,7 +42,7 @@ router.get("/deploy", async (req, res) => {
                 console.error(err);
             }
             console.log(stdout || stderr);
-            console.log("done");
+            console.log("done" + (err ? " with 1 warning" : ""));
             res.send("done" + (err ? " with 1 warning" : ""));
         });
     });
