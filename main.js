@@ -5,7 +5,7 @@ const dbman = require("./database/dbman");
 
 require("dotenv").config();
 
-const listener = client.listen(process.env.PORT || 8080, () => console.log(`listening on port ${listener.address().port}`));
+const listener = client.listen(parseInt(process.env.PORT) || 8080, () => console.log(`listening on port ${listener.address().port}`));
 
 let lastUpdated = 0;
 
