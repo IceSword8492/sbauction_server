@@ -182,7 +182,7 @@ module.exports = Query = class Query {
             break;
         case 0:
         default:
-            sql = `select *, count(bids.uuid) as bid, end - strftime('%s', datetime()) * 1000 as time, max(highest_bid_amount, starting_bid) as price from auctions left outer join bids on auctions.uuid = bids.uuid ${where.length ? "where" : ""} ${where.join(" and ")} group by bids.uuid ${order} ${limit}`;
+            sql = `select *, count(bids.uuid) as bid from (select *, end - strftime('%s', datetime()) * 1000 as time, max(highest_bid_amount, starting_bid) as price from auctions ${where.length ? "where" : ""} ${where.join(" and ")} ${order} ${limit}) left outer join bids using(uuid) group by bids.uuid`;
             break;
         }
         return sql;
