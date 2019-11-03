@@ -36,16 +36,9 @@ async function update () {
     }
     console.log("start writing");
     await dbman.AuctionsManager.begin();
-    await dbman.AuctionsManager.prepare_insert();
+    await dbman.AuctionsManager.prepare_create();
     for (let auction of auctions) {
-        await dbman.AuctionsManager.insert_stmt(auction);
-    }
-    await dbman.AuctionsManager.finalize();
-    await dbman.AuctionsManager.commit();
-    await dbman.AuctionsManager.begin();
-    await dbman.AuctionsManager.prepare_update();
-    for (let auction of auctions) {
-        await dbman.AuctionsManager.update_stmt(auction);
+        await dbman.AuctionsManager.create_stmt(auction);
     }
     await dbman.AuctionsManager.finalize();
     await dbman.AuctionsManager.commit();

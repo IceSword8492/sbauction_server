@@ -31,19 +31,12 @@ module.exports = {
         static async create (data = {}) {
             await this.db.run(`insert or replace into auctions values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, data.uuid, data.auctioneer, data.profile_id, data.start, data.end, data.item_name, data.item_lore, data.extra, data.category, data.tier, data.starting_bid, data.item_bytes, data.claimed, data.highest_bid_amount).catch(e => console.error("[AuctionsManager.create] ", e));
         }
-        static async prepare_insert () {
-            await this.prepare(`insert or ignore into auctions values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).catch(e => console.error("[AuctionsManager.prepare_insert]", e));
+        static async prepare_create () {
+            await this.prepare(`insert or replace into auctions values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
         }
-        static async insert_stmt (data = {}) {
-            if (this._stmt === null) throw new Error("[AuctionManager.insert_stmt] statement empty");
+        static async create_stmt (data = {}) {
+            if (this._stmt === null) throw new Error("[AuctionManager.create_stmt] statement empty");
             await this._stmt.run(data.uuid, data.auctioneer, data.profile_id, data.start, data.end, data.item_name, data.item_lore, data.extra, data.category, data.tier, data.starting_bid, data.item_bytes, data.claimed, data.highest_bid_amount).catch(e => console.error("[AuctionsManager.create_stmt] ", e));
-        }
-        static async prepare_update (data = {}) {
-            await this.prepare("update auctions set auctioneer = ?, profile_id = ?, start = ?, end = ?, item_name = ?, item_lore = ?, extra = ?, category = ?, tier = ?, starting_bid = ?, item_bytes = ?, claimed = ?, highest_bid_amount = ? where uuid = ?").catch(e => console.error("[AuctionsManager.prepare_insert]", e));
-        }
-        static async update_stmt (data = {}) {
-            if (this._stmt === null) throw new Error("[AuctionManager.update_stmt] statement empty");
-            await this._stmt.run(data.auctioneer, data.profile_id, data.start, data.end, data.item_name, data.item_lore, data.extra, data.category, data.tier, data.starting_bid, data.item_bytes, data.claimed, data.highest_bid_amount, data.uuid).catch(e => console.error("[AuctionsManager.update_stmt] ", e));
         }
         static async search (query = "", page = 0) {
             let result = await this.db.all(await Query.compile(query, page, 0)).catch(e => console.error("[AuctionsManager.search] ", e));
