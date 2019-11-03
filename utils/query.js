@@ -178,7 +178,7 @@ module.exports = Query = class Query {
         let sql;
         switch (mode) {
         case 1:
-            sql = `select count(uuid) as count from (select uuid from auctions ${where.length ? "where" : ""} ${where.join(" and ")})`;
+            sql = `select count(uuid) as count from (select uuid, end - strftime('%s', datetime()) * 1000 as time, max(highest_bid_amount, starting_bid) as price from auctions ${where.length ? "where" : ""} ${where.join(" and ")})`;
             break;
         case 0:
         default:
