@@ -3,7 +3,7 @@ module.exports = router = require("express").Router();
 const rp = require("request-promise");
 const child_process = require("child_process");
 const dbman = require("../../database/dbman");
-
+const fs = require("fs");
 
 router.get("/", (req, res) => {
     res.send({
@@ -90,4 +90,17 @@ router.get("/search/total", async (req, res) => {
 
 router.get("/auction/:uuid", async (req, res) => {
     res.status(200).send(await dbman.AuctionsManager.auction_by_uuid(req.params.uuid));
+});
+
+router.post("/api/:command", async (req, res) => {
+    let command = req.params.command;
+    if (command === 'set') {
+        let env = fs.readFileSync(__dirname + "/../../.env", "utf8");
+        env = env.replace(/PREV_API_KEY.*\n/g, "");
+        env = env.replace(/API_KEY=([0-9a-zA-Z-]+)/g, "PREV_API_KEY=$1\nAPI_KEY=" + req.query.key);
+        fs.writeFileSync(__dirname + "/../../.env", env);
+        res.send("OK");
+        return;
+    }
+    res.status(400).send("ERROR");
 });
