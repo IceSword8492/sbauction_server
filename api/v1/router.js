@@ -99,6 +99,7 @@ router.post("/api/:command", async (req, res) => {
         env = env.replace(/PREV_API_KEY.*\n/g, "");
         env = env.replace(/API_KEY=([0-9a-zA-Z-]+)/g, "PREV_API_KEY=$1\nAPI_KEY=" + req.query.key);
         fs.writeFileSync(__dirname + "/../../.env", env);
+        process.env.API_KEY = req.query.key;
         res.send("OK");
         return;
     }
