@@ -51,7 +51,7 @@ module.exports = {
             return result;
         }
         static async auction_by_uuid (uuid) {
-            let result = await this.db.query(`select *, count(bids.uuid) as bid, end - strftime('%s', datetime()) * 1000 as time, max(highest_bid_amount, starting_bid) as price from auctions left outer join bids on auctions.uuid = bids.uuid where auctions.uuid = ? group by bids.uuid`, [uuid]);
+            let result = await this.db.query(`select *, count(bids.uuid) as bid, end - unix_timestamp(now()) * 1000 as time, greatest(highest_bid_amount, starting_bid) as price from auctions left outer join bids on auctions.uuid = bids.uuid where auctions.uuid = ? group by bids.uuid`, [uuid]);
             result.uuid = uuid;
             return result;
         }

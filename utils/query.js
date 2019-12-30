@@ -28,6 +28,11 @@ const Punctuators = [
     "-",
 ];
 
+const SType = {
+    Where: 0,
+    Having: 1,
+};
+
 module.exports = Query = class Query {
     static tokenize (query) {
         // const regex = `(\\/(?<regex>([^\\/]|\\\\/)*)\\/(?<flag>[a-z]*))`;
@@ -101,6 +106,7 @@ module.exports = Query = class Query {
                     response.push({
                         type: Keywords[3],
                         value: `${tokens[i += 2].value} <= price and price <= ${tokens[i += 2].value}`,
+                        searchType: SType.Having,
                     });
                 }
                 if (token.value === Keywords[4]) { // seller
@@ -119,6 +125,7 @@ module.exports = Query = class Query {
                     response.push({
                         type: Keywords[6],
                         value: tokens[i += 2].value === "open" ? "time > 0" : tokens[i].value === "ending" ? "0 < time and time <= 300000" : "time <= 0",
+                        searchType: SType.Having,
                     });
                 }
                 if (token.value === Keywords[7]) { // tier
@@ -149,6 +156,7 @@ module.exports = Query = class Query {
     static async compile (query, page = 0, mode = 0) {
         let ast = await this.parse(query);
         let where = [];
+        let having = [];
         let order = "order by time asc";
         let limit = "limit 48";
         ast.unshift({
@@ -165,7 +173,11 @@ module.exports = Query = class Query {
             case Keywords[7]:
             case Keywords[9]:
             case Keywords[10]:
-                where.push(part.value);
+                if (part.searchType === SType.Having) {
+                    having.push(part.value);
+                } else {
+                    where.push(part.value);
+                }
                 break;
             case Keywords[2]:
                 limit = part.value;
@@ -178,11 +190,11 @@ module.exports = Query = class Query {
         let sql;
         switch (mode) {
         case 1:
-            sql = `select count(t.uuid) as count from (select uuid, end - unix_timestamp(now()) * 1000 as time, greatest(highest_bid_amount, starting_bid) as price from auctions ${where.length ? "having" : ""} ${where.join(" and ")}) as t`;
+            sql = `select count(t.uuid) as count from (select uuid, end - unix_timestamp(now()) * 1000 as time, greatest(highest_bid_amount, starting_bid) as price from auctions ${where.length ? "where" : ""} ${where.join(" and ")} ${having.length ? "having" : ""} ${having.join(" and ")}) as t`;
             break;
         case 0:
         default:
-            sql = `select *, (select count(bids.uuid) as bid from bids where bids.uuid = auctions.uuid) as bid from (select *, end - unix_timestamp(now()) * 1000 as time, greatest(highest_bid_amount, starting_bid) as price from auctions ${where.length ? "having" : ""} ${where.join(" and ")} ${order} ${limit}) auctions`;
+            sql = `select *, (select count(bids.uuid) as bid from bids where bids.uuid = auctions.uuid) as bid from (select *, end - unix_timestamp(now()) * 1000 as time, greatest(highest_bid_amount, starting_bid) as price from auctions ${where.length ? "where" : ""} ${where.join(" and ")} ${having.length ? "having" : ""} ${having.join(" and ")} ${order} ${limit}) auctions`;
             break;
         }
         return sql;
