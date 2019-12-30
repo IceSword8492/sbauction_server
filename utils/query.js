@@ -1,4 +1,7 @@
 const rp = require("request-promise");
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 const Types = {
     keyword: 0,
@@ -178,7 +181,7 @@ module.exports = Query = class Query {
         let sql;
         switch (mode) {
         case 1:
-            sql = `select count(t.uuid) as count from (select uuid, end - unix_timestamp(now()) * 1000 as time, greatest(highest_bid_amount, starting_bid) as price from auctions ${where.length ? "having" : ""} ${where.join(" and ")}) as t`;
+            sql = `select count(t.uuid) as count from (select uuid, end - unix_timestamp(now()) * 1000 as time, greatest(highest_bid_amount, starting_bid) as price from ${process.env.DBNAME}.auctions ${where.length ? "having" : ""} ${where.join(" and ")}) as t`;
             break;
         case 0:
         default:
