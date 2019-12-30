@@ -178,11 +178,11 @@ module.exports = Query = class Query {
         let sql;
         switch (mode) {
         case 1:
-            sql = `select count(uuid) as count from (select uuid, end - unix_timestamp(now()) * 1000 as time, greatest(highest_bid_amount, starting_bid) as price from auctions ${where.length ? "where" : ""} ${where.join(" and ")})`;
+            sql = `select count(uuid) as count from (select uuid, end - unix_timestamp(now()) * 1000 as time, greatest(highest_bid_amount, starting_bid) as price from auctions ${where.length ? "having" : ""} ${where.join(" and ")})`;
             break;
         case 0:
         default:
-            sql = `select *, (select count(bids.uuid) as bid from bids where bids.uuid = auctions.uuid) as bid from (select *, end - unix_timestamp(now()) * 1000 as time, greatest(highest_bid_amount, starting_bid) as price from auctions ${where.length ? "where" : ""} ${where.join(" and ")} ${order} ${limit}) auctions`;
+            sql = `select *, (select count(bids.uuid) as bid from bids where bids.uuid = auctions.uuid) as bid from (select *, end - unix_timestamp(now()) * 1000 as time, greatest(highest_bid_amount, starting_bid) as price from auctions ${where.length ? "having" : ""} ${where.join(" and ")} ${order} ${limit}) auctions`;
             break;
         }
         return sql;
