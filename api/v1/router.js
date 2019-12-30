@@ -85,7 +85,7 @@ router.get("/search/total", async (req, res) => {
         query = "sort:price.desc state:open";
     }
     let result = await dbman.AuctionsManager.search_total_count(query);
-    console.log(result, result.RowDataPacket, result.count, typeof result.count);
+    console.log(result, result instanceof Array, typeof result, result['RowDataPacket'], result.count, typeof result.count);
     res.status(200).send({totalPages: Math.ceil(result.count / 48), totalRecords: result.count});
 });
 
