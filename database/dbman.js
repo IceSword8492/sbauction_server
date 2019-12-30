@@ -48,6 +48,7 @@ module.exports = {
         }
         static async search_total_count (query = "", page = 0) {
             let result = await this.db.query(await Query.compile(query, page, 1)).catch(e => console.error("[AuctionsManager.search_total_count] ", e));
+            console.log(result);
             return result;
         }
         static async auction_by_uuid (uuid) {
