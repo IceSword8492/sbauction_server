@@ -1,4 +1,3 @@
-const sqlite = require("sqlite-async");
 const mysql = require('promise-mysql');
 const Query = require("../utils/query");
 
@@ -31,17 +30,17 @@ module.exports = {
     AuctionsManager: class extends DBMan {
         static async init () {
             await super.init();
-            await this.db.query("create table if not exists auctions (uuid varchar(128) unique primary key, auctioneer text, profile_id text, start integer, end integer, item_name text, item_lore text, extra text, category text, tier text, starting_bid integer, item_bytes text, claimed boolean, highest_bid_amount integer)").catch(e => console.error("[BidsManager.init] ", e));
+            await this.db.query("create table if not exists auctions (uuid varchar(128) unique primary key, auctioneer text, profile_id text, start bigint, end bigint, item_name text, item_lore text, extra text, category text, tier text, starting_bid bigint, item_bytes text, claimed boolean, highest_bid_amount bigint)").catch(e => console.error("[BidsManager.init] ", e));
         }
         static async create (data = {}) {
-            await this.db.format(`insert into auctions values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) on duplicate key update uuid = ?, auctioneer = ?, profile_id = ?, start = ?, end = ?, item_name = ?, item_lore = ?, extra = ?, category = ?, tier = ?, starting_bid = ?, item_bytes = ?, claimed = ?, highest_bid_amount = ?`, [data.uuid, data.auctioneer, data.profile_id, data.start, data.end, data.item_name, data.item_lore, data.extra, data.category, data.tier, data.starting_bid, data.item_bytes, data.claimed, data.highest_bid_amount, data.uuid, data.auctioneer, data.profile_id, data.start, data.end, data.item_name, data.item_lore, data.extra, data.category, data.tier, data.starting_bid, data.item_bytes, data.claimed, data.highest_bid_amount]).catch(e => console.error("[AuctionsManager.create] ", e));
+            await this.db.query(`insert into auctions values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) on duplicate key update uuid = ?, auctioneer = ?, profile_id = ?, start = ?, end = ?, item_name = ?, item_lore = ?, extra = ?, category = ?, tier = ?, starting_bid = ?, item_bytes = ?, claimed = ?, highest_bid_amount = ?`, [data.uuid, data.auctioneer, data.profile_id, data.start, data.end, data.item_name, data.item_lore, data.extra, data.category, data.tier, data.starting_bid, data.item_bytes, data.claimed, data.highest_bid_amount, data.uuid, data.auctioneer, data.profile_id, data.start, data.end, data.item_name, data.item_lore, data.extra, data.category, data.tier, data.starting_bid, data.item_bytes, data.claimed, data.highest_bid_amount]);
         }
         static async prepare_create () {
             await this.prepare(`insert into auctions values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) on duplicate key update uuid = ?, auctioneer = ?, profile_id = ?, start = ?, end = ?, item_name = ?, item_lore = ?, extra = ?, category = ?, tier = ?, starting_bid = ?, item_bytes = ?, claimed = ?, highest_bid_amount = ?`);
         }
         static async create_stmt (data = {}) {
             if (this._stmt === null) throw new Error("[AuctionManager.create_stmt] statement empty");
-            await this.db.format(this._stmt, [ata.uuid, ddata.auctioneer, data.profile_id, data.start, data.end, data.item_name, data.item_lore, data.extra, data.category, data.tier, data.starting_bid, data.item_bytes, data.claimed, data.highest_bid_amount, data.uuid, data.auctioneer, data.profile_id, data.start, data.end, data.item_name, data.item_lore, data.extra, data.category, data.tier, data.starting_bid, data.item_bytes, data.claimed, data.highest_bid_amount]).catch(e => console.error("[AuctionsManager.create_stmt] ", e));
+            await this.db.query(this._stmt, [data.uuid, data.auctioneer, data.profile_id, data.start, data.end, data.item_name, data.item_lore, data.extra, data.category, data.tier, data.starting_bid, data.item_bytes, data.claimed, data.highest_bid_amount, data.uuid, data.auctioneer, data.profile_id, data.start, data.end, data.item_name, data.item_lore, data.extra, data.category, data.tier, data.starting_bid, data.item_bytes, data.claimed, data.highest_bid_amount]);
         }
         static async search (query = "", page = 0) {
             let result = await this.db.query(await Query.compile(query, page, 0)).catch(e => console.error("[AuctionsManager.search] ", e));
@@ -52,7 +51,7 @@ module.exports = {
             return result;
         }
         static async auction_by_uuid (uuid) {
-            let result = await this.db.format(`select *, count(bids.uuid) as bid, end - strftime('%s', datetime()) * 1000 as time, max(highest_bid_amount, starting_bid) as price from auctions left outer join bids on auctions.uuid = bids.uuid where auctions.uuid = ? group by bids.uuid`, [uuid]).catch(console.error);
+            let result = await this.db.query(`select *, count(bids.uuid) as bid, end - strftime('%s', datetime()) * 1000 as time, max(highest_bid_amount, starting_bid) as price from auctions left outer join bids on auctions.uuid = bids.uuid where auctions.uuid = ? group by bids.uuid`, [uuid]);
             result.uuid = uuid;
             return result;
         }
@@ -63,30 +62,30 @@ module.exports = {
             await this.db.query("create table if not exists claimed_bidders (uuid varchar(128) primary key, claimed_bidder varchar(128), unique(uuid, claimed_bidder))").catch(console.error);
         }
         static async create (data = {}) {
-            await this.db.format(`insert into claimed_bidders values (?, ?) on duplicate key update uuid = ?, claimed_bidder = ?`, [data.uuid, data.claimed_bidder, data.uuid, data.claimed_bidder]);
+            await this.db.query(`insert into claimed_bidders values (?, ?) on duplicate key update uuid = ?, claimed_bidder = ?`, [data.uuid, data.claimed_bidder, data.uuid, data.claimed_bidder]);
         }
         static async prepare_create () {
             await this.prepare(`insert into claimed_bidders values (?, ?) on duplicate key update uuid = ?, claimed_bidder = ?`);
         }
         static async create_stmt (data = {}) {
             if (this._stmt === null) throw new Error("[ClaimedBidderManager.create_stmt] statement empty");
-            await this.db.format(this._stmt, [data.uuid, data.claimed_bidder, data.uuid, data.claimed_bidder]).catch(e => console.error("[ClaimedBiddersManager.create_stmt] ", e));
+            await this.db.query(this._stmt, [data.uuid, data.claimed_bidder, data.uuid, data.claimed_bidder]);
         }
     },
     BidsManager: class extends DBMan {
         static async init () {
             await super.init();
-            await this.db.query("create table if not exists bids (uuid varchar(128) primary key, auction_id text, bidder text, profile_id text, amount integer, timestamp integer, unique(uuid, timestamp))").catch(e => console.error("[BidsManager.init] ", e));
+            await this.db.query("create table if not exists bids (id bigint primary key auto_increment not null, uuid varchar(128), auction_id text, bidder text, profile_id text, amount bigint, timestamp bigint, unique(uuid, timestamp))").catch(e => console.error("[BidsManager.init] ", e));
         }
         static async create (data = {}) {
-            await this.db.format(`insert into bids values (?, ?, ?, ?, ?, ?) on duplicate key update uuid = ?, auction_id = ?, bidder = ?, profile_id = ?, amount = ?, timestamp = ?`, [data.auction_id, data.auction_id, data.bidder, data.profile_id, data.amount, data.timestamp, data.auction_id, data.auction_id, data.bidder, data.profile_id, data.amount, data.timestamp]).catch(e => console.error("[BidsManager.create] ", e));
+            await this.db.query(`insert into bids (uuid, auction_id, bidder, profile_id, amount, timestamp) values (?, ?, ?, ?, ?, ?) on duplicate key update uuid = ?, auction_id = ?, bidder = ?, profile_id = ?, amount = ?, timestamp = ?`, [data.auction_id, data.auction_id, data.bidder, data.profile_id, data.amount, data.timestamp, data.auction_id, data.auction_id, data.bidder, data.profile_id, data.amount, data.timestamp]);
         }
         static async prepare_create () {
-            await this.prepare(`insert into bids values (?, ?, ?, ?, ?, ?) on duplicate key update uuid = ?, auction_id = ?, bidder = ?, profile_id = ?, amount = ?, timestamp = ?`);
+            await this.prepare(`insert into bids (uuid, auction_id, bidder, profile_id, amount, timestamp) values (?, ?, ?, ?, ?, ?) on duplicate key update uuid = ?, auction_id = ?, bidder = ?, profile_id = ?, amount = ?, timestamp = ?`);
         }
         static async create_stmt (data = {}) {
             if (this._stmt === null) throw new Error("[BidsManager.create_stmt] statement empty");
-            await this.db.format(this._stmt, [data.auction_id, data.auction_id, data.bidder, data.profile_id, data.amount, data.timestamp, data.auction_id, data.auction_id, data.bidder, data.profile_id, data.amount, data.timestamp]).catch(e => console.error("[BidsManager.create_stmt] ", e));
+            await this.db.query(this._stmt, [data.auction_id, data.auction_id, data.bidder, data.profile_id, data.amount, data.timestamp, data.auction_id, data.auction_id, data.bidder, data.profile_id, data.amount, data.timestamp]);
         }
     },
     UsersManager: class extends DBMan {
@@ -98,13 +97,13 @@ module.exports = {
     ScriptManager: class extends DBMan {
         static async init () {
             await super.init();
-            await this.db.query("create table if not exists script (id integer auto_increment, uuid text, query text, timestamp integer)").catch(console.error);
+            await this.db.query("create table if not exists script (id bigint auto_increment primary key not null, uuid text, query text, timestamp bigint)").catch(console.error);
         }
     },
     WatchManager: class extends DBMan {
         static async init () {
             await super.init();
-            await this.db.query("create table if not exists watch (id integer auto_increment, uuid text, auction_uuid text, notif boolean)").catch(console.error);
+            await this.db.query("create table if not exists watch (id bigint auto_increment primary key not null, uuid text, auction_uuid text, notif boolean)").catch(console.error);
         }
     },
     NotificationManager: class extends DBMan {
@@ -116,7 +115,7 @@ module.exports = {
     QueryManager: class extends DBMan {
         static async init () {
             await super.init();
-            await this.db.query("create table if not exists query (id integer primary key auto_increment, uuid text, script text, timestamp integer)").catch(console.error);
+            await this.db.query("create table if not exists query (id bigint primary key auto_increment, uuid text, script text, timestamp bigint)").catch(console.error);
         }
     },
 };

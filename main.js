@@ -40,7 +40,6 @@ async function update () {
     for (let auction of auctions) {
         await dbman.AuctionsManager.create_stmt(auction);
     }
-    await dbman.AuctionsManager.finalize();
     await dbman.AuctionsManager.commit();
     await dbman.BidsManager.begin();
     await dbman.BidsManager.prepare_create();
@@ -49,7 +48,6 @@ async function update () {
             await dbman.BidsManager.create_stmt(bid);
         }
     }
-    await dbman.BidsManager.finalize();
     await dbman.BidsManager.commit();
     console.log("done");
 }
