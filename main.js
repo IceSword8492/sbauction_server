@@ -14,7 +14,7 @@ client.use("/api/v1", require("./api/v1/router"));
 async function update () {
     console.log("updating");
     let auctions = JSON.parse(await rp.get(`https://api.hypixel.net/skyblock/auctions?key=${process.env.API_KEY}`).catch(console.error));
-    
+
     let totalPages = auctions.totalPages || 1;
     if (lastUpdated === (auctions.lastUpdated || 0)) {
         return;
