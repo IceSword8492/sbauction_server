@@ -75,9 +75,9 @@ async function updateStatistics (date, timestamp) {
 })();
 
 setInterval(async () => {
-    await update();
     if (++counter > 9) { // every 20mins
         counter = 0;
         await updateStatistics(moment().tz('Asia/Tokyo').format(), new Date().getTime());
     }
+    await update();
 }, 120000); // every 2mins
