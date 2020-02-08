@@ -55,7 +55,8 @@ module.exports = {
                 console.error(`invalid uuid: ${uuid}`);
                 return {};
             }
-            let result = await this.db.query(`select *, count(bids.uuid) as bid, end - unix_timestamp(now()) * 1000 as time, greatest(highest_bid_amount, starting_bid) as price from auctions left outer join bids on auctions.uuid = bids.uuid where auctions.uuid = ?`, [uuid]);
+            let result = await this.db.query(`select *, end - unix_timestamp(now()) * 1000 as time, greatest(highest_bid_amount, starting_bid) as price from auctions where auctions.uuid = ?`, [uuid]);
+            Object.assign(result, await this.db.query('select count(uuid) as bid from bids where uuid = ?', [uuid]).catch(console.error));
             return result;
         }
     },
