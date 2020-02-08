@@ -6,3 +6,6 @@ node_modules
 
 # データベース
 database/main.db*
+
+# テスト
+test

@@ -105,3 +105,21 @@ router.post("/api/:command", async (req, res) => {
     }
     res.status(400).send("ERROR");
 });
+
+router.get('/statistics/', async (req, res) => {
+    /**
+     * /statistics?period=<period>
+     *      <period>: millis
+     *          get statistics from now - period to now
+     */
+    const period = parseInt(req.query.period) || null;
+    const statistics = await dbman.StatisticsManager.getStatistics(period, true);
+    res.send(statistics);
+});
+
+router.get('/statistics/:item_name', async (req, res) => {
+    const itemName = req.params.item_name;
+    const period = parseInt(req.query.period) || null;
+    const statistics = await dbman.StatisticsManager.getStatistics(period, true, itemName);
+    res.send(statistics);
+});

@@ -118,4 +118,155 @@ module.exports = {
             await this.db.query("create table if not exists query (id bigint primary key auto_increment, uuid text, script text, timestamp bigint)").catch(console.error);
         }
     },
+    StatisticsManager: class extends DBMan {
+        static async init () {
+            await super.init();
+            this.db.connection.config.queryFormat = function (query, values) {
+                if (!values) return query;
+                return query.replace(/\:(\w+)/g, function (txt, key) {
+                    if (values.hasOwnProperty(key)) {
+                    return this.escape(values[key]);
+                    }
+                    return txt;
+                }.bind(this));
+            };
+            await this.db.query(`
+            create table if not exists statistics
+                (
+                    id bigint primary key auto_increment,
+                    date varchar(1023),
+                    timestamp bigint,
+                    item_name varchar(1023),
+                    count bigint,
+                    average_starting_bid double,
+                    max_starting_bid bigint,
+                    min_starting_bid bigint,
+                    var_starting_bid double,
+                    std_starting_bid double,
+                    sum_starting_bid bigint,
+                    average_highest_bid_amount double,
+                    max_highest_bid_amount bigint,
+                    min_highest_bid_amount bigint,
+                    var_highest_bid_amount double,
+                    std_highest_bid_amount double,
+                    sum_highest_bid_amount bigint
+                )
+            `);
+        }
+        static async getStatistics (period = null, flag = false, itemName = null) {
+            if (flag) {
+                const statistics = await this.db.query(`
+                select
+                    date,
+                    timestamp,
+                    item_name,
+                    count,
+                    average_starting_bid,
+                    max_starting_bid,
+                    min_starting_bid,
+                    var_starting_bid,
+                    std_starting_bid,
+                    sum_starting_bid,
+                    average_highest_bid_amount,
+                    max_highest_bid_amount,
+                    min_highest_bid_amount,
+                    var_highest_bid_amount,
+                    std_highest_bid_amount,
+                    sum_highest_bid_amount
+                from statistics where timestamp > :timestamp
+                `, {timestamp: new Date().getTime() - (period || (30 * 24 * 60 * 60 * 1000))});
+                let tmp = {};
+                for (const s of statistics) {
+                    if (!tmp[s.item_name]) {
+                        tmp[s.item_name] = [s];
+                        continue;
+                    }
+                    tmp[s.item_name].push(s);
+                }
+                if (itemName) {
+                    if (!tmp[itemName]) return {};
+                    return JSON.parse(JSON.stringify(Object.values(tmp[itemName])));
+                }
+                return JSON.parse(JSON.stringify(Object.values(tmp)));
+            }
+            return await this.db.query(`
+            select
+                item_name,
+                count(starting_bid) as count,
+                avg(starting_bid) as average_starting_bid,
+                max(starting_bid) as max_starting_bid,
+                min(starting_bid) as min_starting_bid,
+                variance(starting_bid) as var_starting_bid,
+                std(starting_bid) as std_starting_bid,
+                sum(starting_bid) as sum_starting_bid,
+                avg(highest_bid_amount) as average_highest_bid_amount,
+                max(highest_bid_amount) as max_highest_bid_amount,
+                min(highest_bid_amount) as min_highest_bid_amount,
+                variance(highest_bid_amount) as var_highest_bid_amount,
+                std(highest_bid_amount) as std_highest_bid_amount,
+                sum(highest_bid_amount) as sum_highest_bid_amount
+            from auctions
+            where
+                end - unix_timestamp(now()) * 1000 < 0
+                and highest_bid_amount > 0
+            group by item_name
+            `);
+        }
+        static async setStatistics (statistics) {
+            await this.begin();
+            await this.prepare_create();
+            for (let s of statistics) {
+                await this.create_stmt(s);
+            }
+            await this.commit();
+            await this.db.query('delete from auctions');
+            await this.db.query('delete from bids');
+        }
+        static async prepare_create () {
+            await this.prepare(`
+            insert into statistics
+                (
+                    date,
+                    timestamp,
+                    item_name,
+                    count,
+                    average_starting_bid,
+                    max_starting_bid,
+                    min_starting_bid,
+                    var_starting_bid,
+                    std_starting_bid,
+                    sum_starting_bid,
+                    average_highest_bid_amount,
+                    max_highest_bid_amount,
+                    min_highest_bid_amount,
+                    var_highest_bid_amount,
+                    std_highest_bid_amount,
+                    sum_highest_bid_amount
+                )
+                values
+                (
+                    :date,
+                    :timestamp,
+                    :item_name,
+                    :count,
+                    :average_starting_bid,
+                    :max_starting_bid,
+                    :min_starting_bid,
+                    :var_starting_bid,
+                    :std_starting_bid,
+                    :sum_starting_bid,
+                    :average_highest_bid_amount,
+                    :max_highest_bid_amount,
+                    :min_highest_bid_amount,
+                    :var_highest_bid_amount,
+                    :std_highest_bid_amount,
+                    :sum_highest_bid_amount
+                )
+            `, );
+        }
+        static async create_stmt (data = {}) {
+            if (this._stmt === null) throw new Error("[StatisticsManager.create_stmt] statement empty");
+            await this.db.query(this._stmt, data);
+        }
+    },
 };

@@ -1,18 +1,21 @@
-const express = require("express");
-const client = express();
-const rp = require("request-promise");
-const dbman = require("./database/dbman");
+const express = require('express');
+const rp = require('request-promise');
+const moment = require('moment-timezone');
+const dbman = require('./database/dbman');
 
-require("dotenv").config({path: __dirname + "/.env"});
+const client = express();
+
+require('dotenv').config({path: __dirname + '/.env'});
 
 const listener = client.listen(parseInt(process.env.PORT) || 8080, () => console.log(`listening on port ${listener.address().port}`));
 
 let lastUpdated = 0;
+let counter = 0;
 
-client.use("/api/v1", require("./api/v1/router"));
+client.use('/api/v1', require('./api/v1/router'));
 
 async function update () {
-    console.log("updating");
+    console.log('updating');
     let auctions = JSON.parse(await rp.get(`https://api.hypixel.net/skyblock/auctions?key=${process.env.API_KEY}`).catch(console.error));
 
     let totalPages = auctions.totalPages || 1;
@@ -25,7 +28,7 @@ async function update () {
     console.log(`totalPages:\t${totalPages}`);
     console.log(`lastUpdated:\t${new Date(lastUpdated)} (Timestamp: ${lastUpdated})`);
 
-    console.log("loaded page 0");
+    console.log('loaded page 0');
     for (let page = 1; ; page++) {
         let a = JSON.parse(await rp.get(`https://api.hypixel.net/skyblock/auctions?key=${process.env.API_KEY}&page=${page}`).catch(console.error));
         if (!a.success) {
@@ -34,7 +37,7 @@ async function update () {
         console.log(`loaded page ${page}`);
         auctions = [...auctions, ...(a.auctions)];
     }
-    console.log("start writing");
+    console.log('start writing');
     await dbman.AuctionsManager.begin();
     await dbman.AuctionsManager.prepare_create();
     for (let auction of auctions) {
@@ -49,16 +52,32 @@ async function update () {
         }
     }
     await dbman.BidsManager.commit();
-    console.log("done");
+    console.log('done');
 }
 
-(async function () {
+async function updateStatistics (date, timestamp) {
+    console.log('start updating statistics');
+    let statistics = await dbman.StatisticsManager.getStatistics();
+    statistics = statistics.map(statistic => {
+        statistic.date = date;
+        statistic.timestamp = timestamp;
+        return statistic;
+    });
+    await dbman.StatisticsManager.setStatistics(statistics);
+    console.log('updated (updated -> statistics / deleted -> auctions, bids)');
+}
+
+(async () => {
     for (let man of Object.values(dbman)) {
         await man.init();
     }
     await update();
 })();
 
-setInterval(async function () {
+setInterval(async () => {
     await update();
+    if (++counter > 9) { // every 20mins
+        counter = 0;
+        await updateStatistics(moment().tz('Asia/Tokyo').format(), new Date().getTime());
+    }
 }, 120000); // every 2mins
