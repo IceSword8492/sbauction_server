@@ -41,6 +41,9 @@ async function update () {
     await dbman.AuctionsManager.begin();
     await dbman.AuctionsManager.prepare_create();
     for (let auction of auctions) {
+        if (!auction.uuid) {
+            console.warn(`UUID: null\ndata -> ${auction}`);
+        }
         await dbman.AuctionsManager.create_stmt(auction);
     }
     await dbman.AuctionsManager.commit();
