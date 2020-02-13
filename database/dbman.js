@@ -217,13 +217,17 @@ module.exports = {
             `);
         }
         static async setStatistics (statistics) {
+            console.log('insert begin');
             await this.begin();
             await this.prepare_create();
             for (let s of statistics) {
                 await this.create_stmt(s);
             }
             await this.commit();
+            console.log('insert end');
+            console.log('delete from auctions');
             await this.db.query('delete from auctions');
+            console.log('delete from bids');
             await this.db.query('delete from bids');
         }
         static async prepare_create () {
