@@ -217,6 +217,7 @@ module.exports = {
             `);
         }
         static async setStatistics (statistics) {
+            /*
             console.log('insert begin');
             await this.begin();
             await this.prepare_create();
@@ -225,6 +226,7 @@ module.exports = {
             }
             await this.commit();
             console.log('insert end');
+            */
             console.log('delete from auctions');
             await this.db.query('delete from auctions');
             console.log('delete from bids');
