@@ -39,6 +39,7 @@ async function update () {
             auctions = [...auctions, ...(a.auctions)];
         } catch (e) {
             console.error('E R R O R !\n' + e);
+            break;
         }
     }
     console.log('start writing');
