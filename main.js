@@ -30,12 +30,16 @@ async function update () {
 
     console.log('loaded page 0');
     for (let page = 1; ; page++) {
-        let a = JSON.parse(await rp.get(`https://api.hypixel.net/skyblock/auctions?key=${process.env.API_KEY}&page=${page}`).catch(console.error));
-        if (!a.success) {
-            break;
+        try {
+            let a = JSON.parse(await rp.get(`https://api.hypixel.net/skyblock/auctions?key=${process.env.API_KEY}&page=${page}`).catch(console.error));
+            if (!a.success) {
+                break;
+            }
+            console.log(`loaded page ${page}`);
+            auctions = [...auctions, ...(a.auctions)];
+        } catch (e) {
+            console.error('E R R O R !\n' + e);
         }
-        console.log(`loaded page ${page}`);
-        auctions = [...auctions, ...(a.auctions)];
     }
     console.log('start writing');
     await dbman.AuctionsManager.begin();
