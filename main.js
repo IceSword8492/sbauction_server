@@ -25,6 +25,7 @@ async function update () {
         } else {
             console.error(e);
         }
+        return false;
     }
 
     let totalPages = auctions.totalPages || 1;
