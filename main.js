@@ -49,7 +49,13 @@ async function update () {
     console.log('loaded page 0');
     for (let page = 1; ; page++) {
         try {
-            let a = JSON.parse(await rp.get(`https://api.hypixel.net/skyblock/auctions?key=${process.env.API_KEY}&page=${page}`).catch(console.error));
+            let a = JSON.parse(await rp.get(`https://api.hypixel.net/skyblock/auctions?key=${process.env.API_KEY}&page=${page}`).catch(e => {
+                if (/Page not found/.test(`${e}`)) {
+                    console.error('Page not found');
+                } else {
+                    console.error(e);
+                }
+            }));
             if (!a.success) {
                 break;
             }
