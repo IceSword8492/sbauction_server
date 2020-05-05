@@ -96,8 +96,8 @@ router.post("/api/:command", async (req, res) => {
     let command = req.params.command;
     if (command === 'set') {
         let env = fs.readFileSync(__dirname + "/../../.env", "utf8");
-        env = env.replace(/PREV_API_KEY.*\n/g, "");
-        env = env.replace(/API_KEY=([0-9a-zA-Z-]+)/g, "PREV_API_KEY=$1\nAPI_KEY=" + req.query.key || req.params.key);
+        env = env.replace(/PREV_API_KEY.*/g, "");
+        env = env.replace(/API_KEY=(.*)/g, "PREV_API_KEY=$1\nAPI_KEY=" + req.query.key || req.params.key);
         fs.writeFileSync(__dirname + "/../../.env", env);
         process.env.API_KEY = req.query.key;
         res.send("OK");
