@@ -5,12 +5,18 @@ const child_process = require("child_process");
 const dbman = require("../../database/dbman");
 const fs = require("fs");
 
+const updateApiKey = require('../../utils/updateApiKey');
+
 router.get("/", (req, res) => {
     res.send({
         version: "v1",
         deprecated: false,
     });
 });
+
+router.get('/key', updateApiKey);
+
+router.post('/key', updateApiKey);
 
 router.get("/auth/:user", async (req, res) => {
     let mc_res = await rp.get("https://api.mojang.com/users/profiles/minecraft/" + req.params.user);
