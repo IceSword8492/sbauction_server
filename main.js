@@ -16,7 +16,16 @@ client.use('/api/v1', require('./api/v1/router'));
 
 async function update () {
     console.log('updating');
-    let auctions = JSON.parse(await rp.get(`https://api.hypixel.net/skyblock/auctions?key=${process.env.API_KEY}`).catch(console.error));
+    try {
+        let auctions = JSON.parse(await rp.get(`https://api.hypixel.net/skyblock/auctions?key=${process.env.API_KEY}`).catch(console.error));
+    } catch (e) {
+        const err = `${e}`;
+        if (/Invalid API key/.test(err)) {
+            console.error('[ERROR] invalid api key');
+        } else {
+            console.error(e);
+        }
+    }
 
     let totalPages = auctions.totalPages || 1;
     if (lastUpdated === (auctions.lastUpdated || 0)) {
@@ -38,7 +47,7 @@ async function update () {
             console.log(`loaded page ${page}`);
             auctions = [...auctions, ...(a.auctions)];
         } catch (e) {
-            console.error('E R R O R !\n' + e);
+            console.error(`load error on page ${page}\n`);
             break;
         }
     }
