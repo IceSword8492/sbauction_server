@@ -57,7 +57,6 @@ module.exports = {
             }
             let result = await this.db.query(`select *, end - unix_timestamp(now()) * 1000 as time, greatest(highest_bid_amount, starting_bid) as price from auctions where auctions.uuid = ?`, [uuid]);
             if (result && result[0]) result[0].bid = (await this.db.query('select count(uuid) as bid from bids where uuid = ?', [uuid]) || [{bid: -1}])[0].bid;
-            console.log(result, result.bid);
             return result;
         }
     },
