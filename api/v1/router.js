@@ -5,18 +5,12 @@ const child_process = require("child_process");
 const dbman = require("../../database/dbman");
 const fs = require("fs");
 
-const updateApiKey = require('../../utils/updateApiKey');
-
 router.get("/", (req, res) => {
     res.send({
         version: "v1",
         deprecated: false,
     });
 });
-
-router.get('/key', updateApiKey);
-
-router.post('/key', updateApiKey);
 
 router.get("/auth/:user", async (req, res) => {
     let mc_res = await rp.get("https://api.mojang.com/users/profiles/minecraft/" + req.params.user);
@@ -103,7 +97,7 @@ router.post("/api/:command", async (req, res) => {
     if (command === 'set') {
         let env = fs.readFileSync(__dirname + "/../../.env", "utf8");
         env = env.replace(/PREV_API_KEY.*\n/g, "");
-        env = env.replace(/API_KEY=([0-9a-zA-Z-]+)/g, "PREV_API_KEY=$1\nAPI_KEY=" + req.query.key);
+        env = env.replace(/API_KEY=([0-9a-zA-Z-]+)/g, "PREV_API_KEY=$1\nAPI_KEY=" + req.query.key || req.params.key);
         fs.writeFileSync(__dirname + "/../../.env", env);
         process.env.API_KEY = req.query.key;
         res.send("OK");
