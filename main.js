@@ -22,6 +22,8 @@ async function update () {
         const err = `${e}`;
         if (/Invalid API key/.test(err)) {
             console.error('[ERROR] invalid api key');
+        } else if (/Unexpected token u/.test(err)) {
+            console.error('[ERROR] undefined');
         } else {
             console.error(e);
         }
