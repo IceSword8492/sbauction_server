@@ -66,47 +66,12 @@ async function update () {
             break;
         }
     }
-    console.log('start writing');
-    await dbman.AuctionsManager.begin();
-    await dbman.AuctionsManager.prepare_create();
-    for (let auction of auctions) {
-        await dbman.AuctionsManager.create_stmt(auction);
-    }
-    await dbman.AuctionsManager.commit();
-    await dbman.BidsManager.begin();
-    await dbman.BidsManager.prepare_create();
-    for (let auction of auctions) {
-        for (let bid of auction.bids) {
-            await dbman.BidsManager.create_stmt(bid);
-        }
-    }
-    await dbman.BidsManager.commit();
+    console.log(auctions);
     console.log('done');
 }
 
-async function updateStatistics (date, timestamp) {
-    console.log('start updating statistics');
-    let statistics = await dbman.StatisticsManager.getStatistics();
-    statistics = statistics.map(statistic => {
-        statistic.date = date;
-        statistic.timestamp = timestamp;
-        return statistic;
-    });
-    await dbman.StatisticsManager.setStatistics(statistics);
-    console.log('updated (updated -> statistics / deleted -> auctions, bids)');
-}
-
 (async () => {
-    for (let man of Object.values(dbman)) {
-        await man.init();
-    }
     await update();
 })();
 
-setInterval(async () => {
-    if (++counter > 14) { // every 30mins
-        counter = 0;
-        await updateStatistics(moment().tz('Asia/Tokyo').format(), new Date().getTime());
-    }
-    await update();
-}, 120000); // every 2mins
+setInterval(async () => await update(), 120000); // every 2mins
