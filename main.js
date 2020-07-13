@@ -1,7 +1,6 @@
 const express = require('express');
 const rp = require('request-promise');
 const moment = require('moment-timezone');
-const dbman = require('./database/dbman');
 
 const client = express();
 

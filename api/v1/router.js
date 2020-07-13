@@ -2,7 +2,6 @@ module.exports = router = require("express").Router();
 
 const rp = require("request-promise");
 const child_process = require("child_process");
-const dbman = require("../../database/dbman");
 const fs = require("fs");
 
 router.get("/", (req, res) => {
